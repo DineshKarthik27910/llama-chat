@@ -101,7 +101,7 @@ async function copyToClipboard(text) {
     } catch (_) {}
   }
 
-  // Fallback for LAN HTTP (e.g. http://192.168.x.x or http://172.x.x.x)
+  // Fallback for non-HTTPS local network access (<YOUR-LAN-IP>)
   try {
     const textArea = document.createElement('textarea');
     textArea.value = text;

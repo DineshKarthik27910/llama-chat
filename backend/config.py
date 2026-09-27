@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     )
 
     # Server Network Settings
-    # SERVER_HOST is the externally accessible IP (e.g. 192.168.1.2 or new network IP)
-    SERVER_HOST: str = "192.168.1.2"
+    # SERVER_HOST is the externally accessible IP on your local network (e.g. LAN IP or localhost)
+    SERVER_HOST: str = "localhost"
     SERVER_PORT: int = 8000
     # SERVER_BIND_HOST is the interface Uvicorn binds to (0.0.0.0 enables LAN access)
     SERVER_BIND_HOST: str = "0.0.0.0"
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # LLM Settings
     LLM_PROVIDER: str = "ollama"
     LLM_API_KEY: str = ""
-    LLM_MODEL: str = "llama3.2"
+    LLM_MODEL: str = "llama3.1:8b"
     LLM_BASE_URL: str = "http://127.0.0.1:11434/v1"
 
     # Storage Settings

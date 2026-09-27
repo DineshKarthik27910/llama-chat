@@ -77,7 +77,7 @@ def test_5_chat_streaming(conv_id):
     }).encode()
 
     req = urllib.request.Request(chat_url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
-    with urllib.request.urlopen(req, timeout=10) as res:
+    with urllib.request.urlopen(req, timeout=60) as res:
         assert res.status == 200
         raw_stream = res.read().decode()
         lines = raw_stream.split("\n")

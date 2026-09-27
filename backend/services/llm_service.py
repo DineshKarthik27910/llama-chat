@@ -124,7 +124,7 @@ class LLMService:
             f"2. For local models using Ollama, set:\n"
             f"```env\n"
             f"LLM_PROVIDER=ollama\n"
-            f"LLM_MODEL=llama3.2\n"
+            f"LLM_MODEL=llama3.1:8b\n"
             f"LLM_BASE_URL=http://127.0.0.1:11434/v1\n"
             f"LLM_API_KEY=\n"
             f"```\n"
