@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Llama — Private LAN Instance</title>
+  <meta name="description" content="Private, self-hosted Llama AI Assistant accessible via IP and Local Network">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>??</text></svg>">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Highlight.js for Syntax Highlighting -->
+  <link rel="stylesheet" href="/static/css/vendor/github-dark.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'">
+  <script src="/static/js/vendor/highlight.min.js"></script>
+  <!-- Marked for Markdown Parsing -->
+  <script src="/static/js/vendor/marked.min.js"></script>
+  <!-- DOMPurify for security -->
+  <script src="/static/js/vendor/purify.min.js"></script>
+  <script>
+    if (typeof hljs === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\\/script>');
+    }
+    if (typeof marked === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\\/script>');
+    }
+    if (typeof DOMPurify === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"><\\/script>');
+    }
+  </script>
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app-container" id="app">
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button class="new-chat-btn" id="newChatBtn" title="Start a new chat">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>New chat</span>
+        </button>
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Close sidebar" aria-label="Close sidebar">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="conversations-wrapper">
+        <div class="conversations-label">Recent Chats</div>
+        <div class="conversations-list" id="conversationsList">
+          <!-- Conversation items dynamically injected here -->
+          <div class="empty-history" id="emptyHistoryNotice">No chats yet</div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer with Server IP & Clear All -->
+      <div class="sidebar-footer">
+        <div class="server-status-card" id="serverStatusCard">
+          <div class="status-indicator-dot online"></div>
+          <div class="status-details">
+            <div class="status-title" id="statusTitle">Server Online</div>
+            <div class="status-ip" id="statusIp">Connecting...</div>
+          </div>
+        </div>
+        <button class="sidebar-action-btn" id="clearAllBtn" title="Clear all conversations">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Clear conversations</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Navigation Bar -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <button class="mobile-toggle-btn" id="mobileToggleBtn" aria-label="Open sidebar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="model-badge">
+            <div class="model-sparkle">?</div>
+            <span class="model-name" id="modelName">Llama</span>
+            <span class="model-tag" id="networkTag">LAN</span>
+            <span class="mode-tag mode-mock" id="modeTag">MOCK MODE</span>
+          </div>
+        </div>
+        <div class="top-bar-right">
+          <button class="top-bar-action" id="topNewChatBtn" title="New Chat">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Chat Messages Container -->
+      <section class="chat-container" id="chatContainer">
+        <!-- Empty State Welcome View -->
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 2a8 8 0 0 0-8 8c0 2.2 1 4.2 2.6 5.6L6 22l6.2-3.1A7.9 7.9 0 0 0 12 18a8 8 0 0 0 8-8 8 8 0 0 0-8-8z"></path>
+            </svg>
+          </div>
+          <h1 class="welcome-title">How can I help you today?</h1>
+          <p class="welcome-subtitle">Accessible privately across your local network</p>
+
+          <div class="prompt-suggestions">
+            <button class="suggestion-card" data-prompt="Explain quantum computing in simple terms for a beginner.">
+              <div class="suggestion-title">Explain quantum computing</div>
+              <div class="suggestion-sub">in simple everyday terms</div>
+            </button>
+            <button class="suggestion-card" data-prompt="Write a clean Python script to test local network ping and port connectivity.">
+              <div class="suggestion-title">Python network script</div>
+              <div class="suggestion-sub">test local IP and port latency</div>
+            </button>
+            <button class="suggestion-card" data-prompt="Compare REST APIs vs GraphQL vs WebSockets with pros and cons.">
+              <div class="suggestion-title">Compare APIs</div>
+              <div class="suggestion-sub">REST vs GraphQL vs WebSockets</div>
+            </button>
+            <button class="suggestion-card" data-prompt="Draft a polite email asking a professor for an extension on an assignment.">
+              <div class="suggestion-title">Draft an email</div>
+              <div class="suggestion-sub">polite deadline extension request</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Message Stream -->
+        <div class="messages-list" id="messagesList"></div>
+
+        <!-- Floating Scroll to Bottom Button -->
+        <button class="scroll-bottom-btn" id="scrollBottomBtn" aria-label="Scroll to bottom">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+      </section>
+
+      <!-- Input Area -->
+      <footer class="input-container">
+        <div class="input-wrapper">
+          <textarea
+            id="messageInput"
+            placeholder="Message Llama..."
+            rows="1"
+            autofocus
+            aria-label="Message input"
+          ></textarea>
+          <button id="sendBtn" class="send-btn" disabled title="Send message" aria-label="Send message">
+            <svg class="icon send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+            <svg class="icon stop-icon" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+            </svg>
+          </button>
+        </div>
+        <div class="input-disclaimer">
+          Llama can make mistakes. Verify important information. Accessible on <span id="disclaimerIp">LAN</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Application Scripts -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
+
